@@ -35,7 +35,10 @@ from romania_map import GRAPH, COORDS
 # --------------------------------------------------------------- distances
 def coords_of(city):
     """Return a city's (x, y) from COORDS as a length-2 numpy array of floats."""
-    raise NotImplementedError
+    return np.array(COORDS.get(city), dtype=float)
+
+
+       
 
 
 def euclidean(a, b):
@@ -44,17 +47,36 @@ def euclidean(a, b):
     Write the formula yourself with numpy operations. Do not call
     numpy.linalg.norm, math.dist, or scipy.
     """
-    raise NotImplementedError
+    pa = np.array(a)
+    pb = np.array(b)
+
+    pdiff = pb - pa
+    ppow = pdiff ** 2
+    psqrt = np.sqrt(sum(ppow))
+    return psqrt
+
 
 
 def manhattan(a, b):
     """Manhattan (L1) distance between two length-2 numpy arrays."""
-    raise NotImplementedError
+    pa = np.array(a)
+    pb = np.array(b)
+
+    pdiff = pb-pa
+    pabs = np.abs(pdiff)
+
+    return np.sum(pabs)
 
 
 def chebyshev(a, b):
     """Chebyshev (L-infinity) distance between two length-2 numpy arrays."""
-    raise NotImplementedError
+    pa = np.array(a)
+    pb = np.array(b)
+
+    pdiff = pb - pa
+    pabs = np.abs(pdiff)
+    pmax = np.max(pabs)
+    return pmax
 
 
 def heuristic(city, goal):
@@ -70,7 +92,14 @@ def heuristic(city, goal):
     Must return 0.0 when city == goal.
     Your astar() must CALL this function -- do not inline the formula.
     """
-    raise NotImplementedError
+
+    # TODO will need to look up bu think chebyshev will overestimate, idk about manhatten
+    # I know ecludian won't estimate because it returns displacement 
+    if city == goal:
+        return 0.0
+    else:
+        return euclidean( coords_of(city), coords_of(goal))
+
 
 
 # ------------------------------------------------------------------ search
