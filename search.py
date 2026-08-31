@@ -1,10 +1,13 @@
 """
 Uninformed and informed search on the course map.
 
-MY HEURISTIC CHOICE: ______________________
+MY HEURISTIC CHOICE: ___Euclidean distance___
 Justification (2-3 sentences): is it admissible on this map? is it consistent?
 why?
 
+Yes Euclidean distance is admissible on this map and it is consistent. 
+Euclidean distance provides the displacement between two locations so the algorithm can not overestimate the distance.
+Also the roman_map is set up synthesically in euclidean distance in mind. The distance is just a number, no differiation of top/down and left/right moves. 
 
 Implement the functions below. Do not rename them or change their signatures.
 Do not modify romania_map.py.
