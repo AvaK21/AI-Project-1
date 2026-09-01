@@ -1,4 +1,5 @@
 """
+Ava Kirkland
 Uninformed and informed search on the course map.
 
 MY HEURISTIC CHOICE: ___Euclidean distance___
@@ -26,7 +27,9 @@ If no path exists, a search returns (None, None, 0).
 
 Run the public tests with:   python run_tests.py
 """
-
+# TODO help on visited structure of breadth first search
+# TODO implement deep first is needed for U and A*?
+# TODO BIGGEST: for first breadth first search got expanded 3, expected 5 I don't understand what correct answer is 5
 import heapq
 from collections import deque
 
@@ -107,7 +110,58 @@ def heuristic(city, goal):
 
 # ------------------------------------------------------------------ search
 def bfs(start, goal):
-    """Breadth-first search. Goal-test children as they are GENERATED."""
+    """Breadth-first search. Goal-test children as they are GENERATED.
+    return: (path, cost, expanded)
+    path - inclusive list
+    cost - total cost of path (integer)
+    expanded - number of types expanded (not incremented when find goal bc stop when in expanded/frontier)
+    """
+    if start not in GRAPH or goal not in GRAPH:
+        return (None, None,0)
+    elif start == goal:
+        ([start], 0,0)
+    else:
+        #initialization
+        path = [start]
+        cost = 0
+        expanded = 1
+        meet_goal = False
+        #TODO Not sure about visisted structre city: (how many actions to get there, cost) (parent ? mentioned in Readme don't understand that part)
+        visited = dict({start:(0,0)}) # city: (how many actions to get there, cost)
+        frontier = deque([])
+        #for expanding the first value
+
+        for city, city_cost in sorted(GRAPH[start].items(),reverse =True):
+            if city == goal:
+                path.append(city)
+                cost += city_cost
+                return (path, cost,expanded)
+            else:
+                frontier.append((city, city_cost))
+        while (frontier and not meet_goal):
+            #Pop top of stack (alphebetically lowest value of recent adding to frontier from a city neighbors)
+            # Expanding
+            current, c_cost = frontier.pop()
+            if current in visited: continue
+            expanded += 1
+            cost += c_cost 
+            visited[current] = (expanded, c_cost)
+            path.append(current)
+            #Exploring new frontier values 
+            for city, city_cost in sorted(GRAPH[current].items(), reverse=True):
+                if city == goal:
+                    path.append(city)
+                    cost += city_cost
+                    return (path, cost,expanded)
+                else:
+                    frontier.append((city, city_cost))
+
+                
+
+        
+
+    #if there is no connection from start to goal
+    return (None, None, 0)
     raise NotImplementedError
 
 
@@ -117,14 +171,35 @@ def dfs(start, goal):
     Push successors in reverse alphabetical order so the alphabetically
     first neighbour is popped first.
     """
+    if start not in GRAPH or goal not in GRAPH:
+        return (None, None,0)
+    elif start == goal:
+        ([start], 0,0)
+
+    #if there is no connection from start to goal
+    return (None, None, 0)
     raise NotImplementedError
 
 
 def ucs(start, goal):
     """Uniform-cost search. Goal-test nodes as they are EXPANDED."""
+    if start not in GRAPH or goal not in GRAPH:
+        return (None, None,0)
+    elif start == goal:
+        ([start], 0,0)
+
+
+    return (None, None, 0)
     raise NotImplementedError
 
 
 def astar(start, goal):
     """A* search using heuristic(city, goal)."""
+    if start not in GRAPH or goal not in GRAPH:
+        return (None, None,0)
+    elif start == goal:
+        ([start], 0,0)
+
+    #if there is no connection from start to goal
+    return (None, None, 0)
     raise NotImplementedError
