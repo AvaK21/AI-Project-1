@@ -106,7 +106,17 @@ def heuristic(city, goal):
     else:
         return euclidean( coords_of(city), coords_of(goal))
 
-
+#-----------------------------Helper functions
+def bfsGoalPathAndCost(cities:dict, goal)-> tuple:
+    """After the goal city has been found in Breadth-first search, pass visited dictionary to 
+    determine path from goal to start
+    # Args:
+    # cities (visited) structure: dict({city:(parent:cost)})
+    # goal: goal city that was just seen when expanded last entry of visited dictionary
+    # 
+    # Returns:
+    # ([path], cost) - Path from start to goal, and cost of that path"""
+    #TODO
 
 # ------------------------------------------------------------------ search
 def bfs(start, goal):
@@ -127,34 +137,40 @@ def bfs(start, goal):
         expanded = 1
         meet_goal = False
         #TODO Not sure about visisted structre city: (how many actions to get there, cost) (parent ? mentioned in Readme don't understand that part)
-        visited = dict({start:(0,0)}) # city: (how many actions to get there, cost)
+        visited = dict({start:(None,0)}) # city: (how many actions to get there, cost) # TODO parent dictionary and cost from parent
+        #once get to goal, go back through dictionary to get path based on parent and cost 
+        # function for path if find a cost that is shorter, then - update dictionary 
+        # drawings  
         frontier = deque([])
         #for expanding the first value
 
-        for city, city_cost in sorted(GRAPH[start].items(),reverse =True):
+        for city, city_cost in sorted(GRAPH[start].items()):
             if city == goal:
                 path.append(city)
                 cost += city_cost
-                return (path, cost,expanded)
+                return ([start], cost,expanded)
             else:
-                frontier.append((city, city_cost))
+                frontier.append((city, start, city_cost))
         while (frontier and not meet_goal):
             #Pop top of stack (alphebetically lowest value of recent adding to frontier from a city neighbors)
             # Expanding
-            current, c_cost = frontier.pop()
+            current, parent, c_cost = frontier.popleft()
             if current in visited: continue
             expanded += 1
-            cost += c_cost 
-            visited[current] = (expanded, c_cost)
-            path.append(current)
+            
+            visited[current] = (parent, c_cost)
+            
             #Exploring new frontier values 
-            for city, city_cost in sorted(GRAPH[current].items(), reverse=True):
+            for city, city_cost in sorted(GRAPH[current].items()):
                 if city == goal:
-                    path.append(city)
-                    cost += city_cost
+                    # TODO goal finder
                     return (path, cost,expanded)
-                else:
-                    frontier.append((city, city_cost))
+                elif city not in visited:
+                    frontier.append((city, current, city_cost))
+
+                    # changed frontier city, parent and cost, 
+                    # path and cost is still incorrect, should be determined at the end once goal is found
+                    #  did - on the else above change to elif city not in visited
 
                 
 
