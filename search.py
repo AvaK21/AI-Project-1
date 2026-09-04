@@ -107,7 +107,7 @@ def heuristic(city, goal):
         return euclidean( coords_of(city), coords_of(goal))
 
 #-----------------------------Helper functions
-def bfsGoalPathAndCost(cities:dict, goal)-> tuple:
+def bfsGoalPathAndCost(cities:dict,goal)-> tuple:
     """After the goal city has been found in Breadth-first search, pass visited dictionary to 
     determine path from goal to start
     # Args:
@@ -117,6 +117,33 @@ def bfsGoalPathAndCost(cities:dict, goal)-> tuple:
     # Returns:
     # ([path], cost) - Path from start to goal, and cost of that path"""
     #TODO
+    path = [goal]
+    found_start = False
+    total_cost = 0
+    parent = None
+    current_position = goal
+    while not found_start:
+        (parent, cost) = cities.get(current_position)
+        if parent is None:
+            # values are placed in reverse order 
+
+            # reverse order to be correct with start index 0
+            path = path[::-1]
+            total_cost += cost
+            found_start = True
+            return(path,total_cost)
+        else:
+            #get city to front of the path, to be in correct order
+            path.append(parent)
+            total_cost += cost
+            current_position = parent
+
+
+    # get the last dictionary entry
+
+    last_city, (last_parent,city_cost)  = cities.popitem()
+
+
 
 # ------------------------------------------------------------------ search
 def bfs(start, goal):
@@ -125,6 +152,20 @@ def bfs(start, goal):
     path - inclusive list
     cost - total cost of path (integer)
     expanded - number of types expanded (not incremented when find goal bc stop when in expanded/frontier)
+
+    For edge cases, if start or goal not in GRAPH, or start == goal or (else) if there is no path
+    Normal case
+    visit start node and add all neighbors to frontier, (city, parent, cost) tuple alpebetically sorted, 
+    - pop node 
+    - check if goal, else add neighbors to frontier (if not already visited) 
+    once goal is found, use visited dictionary to backtrack from goal to start to get path and cost 
+    return path, cost, expanded
+
+    While the goal is added to visited dictionary, it is not expqnded
+    Expanded is when you pop the city and add its neighbors to the frontier
+
+    breadth-first search is graph search or going from a node, layer by layer til get to goal.
+
     """
     if start not in GRAPH or goal not in GRAPH:
         return (None, None,0)
@@ -132,23 +173,22 @@ def bfs(start, goal):
         ([start], 0,0)
     else:
         #initialization
-        path = [start]
+        path = []
         cost = 0
         expanded = 1
         meet_goal = False
-        #TODO Not sure about visisted structre city: (how many actions to get there, cost) (parent ? mentioned in Readme don't understand that part)
-        visited = dict({start:(None,0)}) # city: (how many actions to get there, cost) # TODO parent dictionary and cost from parent
+        visited = dict({start:(None,0)}) # city: (parent,cost)
         #once get to goal, go back through dictionary to get path based on parent and cost 
-        # function for path if find a cost that is shorter, then - update dictionary 
-        # drawings  
+
         frontier = deque([])
         #for expanding the first value
 
         for city, city_cost in sorted(GRAPH[start].items()):
             if city == goal:
+                path.append(start)
                 path.append(city)
                 cost += city_cost
-                return ([start], cost,expanded)
+                return (path, cost,expanded)
             else:
                 frontier.append((city, start, city_cost))
         while (frontier and not meet_goal):
@@ -163,7 +203,12 @@ def bfs(start, goal):
             #Exploring new frontier values 
             for city, city_cost in sorted(GRAPH[current].items()):
                 if city == goal:
+                    visited[city] = (current, city_cost)
                     # TODO goal finder
+                    (finished_path, total_cost) = bfsGoalPathAndCost(visited,city)
+                    path = finished_path
+                    cost = total_cost
+                    meet_goal = True
                     return (path, cost,expanded)
                 elif city not in visited:
                     frontier.append((city, current, city_cost))
