@@ -256,10 +256,7 @@ def dfs(start, goal):
         ([start], 0,0)
     else:
         #initialization
-        # path = []
-        # total_cost = 0
         expanded = 1
-        meet_goal = False
         visited = dict({start:(None,0)}) # city: (parent,cost)
         frontier = deque([])
         # expand start, so that a frontier has some starting values
@@ -294,12 +291,33 @@ def ucs(start, goal):
     # (cost, city) cost from start to the city
     # heapq.heappush(pq,(f,city))
     # Test goal when expand and pop and exit when goal is popped
+    # When you reach a city more cheaply than previously recorded, 
+    # update its cost and parent and push it again. heapq has no decrease-key, 
+    # so the old entry stays in the heap as a stale entry pointing at a worse path.
+    # so if in visited still can go to it?
     if start not in GRAPH or goal not in GRAPH:
         return (None, None,0)
     elif start == goal:
         ([start], 0,0)
     else:
         #initialization
+        expanded = 1
+        visited = dict({start:(None,0)}) # city: (parent,cost)
+        frontier = deque([])
+        for city, city_cost in GRAPH[start].items():
+            heapq.push(frontier, (city_cost, city, start)) # (cost from start, city, parent)
+        while frontier:
+            (city_cost, current, parent) = frontier.pop()
+            if current not in visited or visited[current][1] > city_cost:
+                visited[current] = (parent, city_cost)
+            else: continue
+                #Line above idk if need
+
+
+            # draw image
+            expanded += 1
+
+
 
 
 
