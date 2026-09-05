@@ -287,17 +287,24 @@ def dfs(start, goal):
     #if there is no connection from start to goal
     return (None, None, 0)
 
-
+# Ask evaulation function??
 def ucs(start, goal):
     """Uniform-cost search. Goal-test nodes as they are EXPANDED."""
+    #priority queue, pop lostest costing node  and if a tie go alphabetically 
+    # (cost, city) cost from start to the city
+    # heapq.heappush(pq,(f,city))
+    # Test goal when expand and pop and exit when goal is popped
     if start not in GRAPH or goal not in GRAPH:
         return (None, None,0)
     elif start == goal:
         ([start], 0,0)
+    else:
+        #initialization
+
 
 
     return (None, None, 0)
-    raise NotImplementedError
+
 
 
 def astar(start, goal):
