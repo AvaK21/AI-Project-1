@@ -110,6 +110,7 @@ def heuristic(city, goal):
 def generate_path_cost_tuple(cities:dict,goal)-> tuple:
     """After the goal city has been found in Breadth-first search, pass visited dictionary to 
     determine path from goal to start
+    Assumption: cost is from parent to child, not from start to child. BFS and DFS are good, UCS and A* no.
     ### Args:
      cities (visited) structure: dict({city:(parent:cost)})
      goal: goal city that was just seen when expanded last entry of visited dictionary
@@ -303,19 +304,30 @@ def ucs(start, goal):
         #initialization
         expanded = 1
         visited = dict({start:(None,0)}) # city: (parent,cost)
-        frontier = deque([])
+        frontier = []
         for city, city_cost in GRAPH[start].items():
-            heapq.push(frontier, (city_cost, city, start)) # (cost from start, city, parent)
+            heapq.heappush(frontier, (city_cost, city, start)) # (cost from start, city, parent)
         while frontier:
-            (city_cost, current, parent) = frontier.pop()
-            if current not in visited or visited[current][1] > city_cost:
-                visited[current] = (parent, city_cost)
-            else: continue
-                #Line above idk if need
+            (current_cost, current, parent) = heapq.heappop(frontier) # pop organizes the head from smallest to largest
+            if current in visited: continue
+            visited[current] = (parent, current_cost)
 
-
-            # draw image
             expanded += 1
+            if current == goal:
+                # Cost would be incorrect because in this equation, the cost is from start to the city, not parent to city
+                (path, _) = generate_path_cost_tuple(visited, goal)
+                return (path, current_cost, expanded)
+            for city, city_cost in GRAPH[current].items():
+                city_present = False
+                #assuming starting from the cheapest
+                for item in frontier:
+                    if item[1] == city: 
+                        city_present = True
+                        if city_cost + current_cost < item[0]:
+                            heapq.heappush(frontier, (city_cost+ current_cost, city, current))
+                            break #break out of for loop
+                if not city_present:
+                    heapq.heappush(frontier, (city_cost+ current_cost, city, current))
 
 
 
