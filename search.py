@@ -142,7 +142,7 @@ def generate_path_cost_tuple(cities:dict,goal)-> tuple:
 
     # get the last dictionary entry
 
-    last_city, (last_parent,city_cost)  = cities.popitem()
+    # last_city, (last_parent,city_cost)  = cities.popitem()
 
 
 
@@ -171,7 +171,7 @@ def bfs(start, goal):
     if start not in GRAPH or goal not in GRAPH:
         return (None, None,0)
     elif start == goal:
-        ([start], 0,0)
+        return ([start], 0,0)
     else:
         #initialization
         path = []
@@ -254,7 +254,7 @@ def dfs(start, goal):
     if start not in GRAPH or goal not in GRAPH:
         return (None, None,0)
     elif start == goal:
-        ([start], 0,0)
+        return ([start], 0,0)
     else:
         #initialization
         expanded = 1
@@ -289,8 +289,8 @@ def dfs(start, goal):
 def ucs(start, goal):
     """Uniform-cost search. Goal-test nodes as they are EXPANDED."""
     #priority queue, pop lostest costing node  and if a tie go alphabetically 
-    # (cost, city) cost from start to the city
-    # heapq.heappush(pq,(f,city))
+    # (cost, city, parent) cost from start to the city
+    # heapq.heappush(pq,(f,city, parent))
     # Test goal when expand and pop and exit when goal is popped
     # When you reach a city more cheaply than previously recorded, 
     # update its cost and parent and push it again. heapq has no decrease-key, 
@@ -299,7 +299,7 @@ def ucs(start, goal):
     if start not in GRAPH or goal not in GRAPH:
         return (None, None,0)
     elif start == goal:
-        ([start], 0,0)
+        return ([start], 0,0)
     else:
         #initialization
         expanded = 1
@@ -308,7 +308,7 @@ def ucs(start, goal):
         for city, city_cost in GRAPH[start].items():
             heapq.heappush(frontier, (city_cost, city, start)) # (cost from start, city, parent)
         while frontier:
-            (current_cost, current, parent) = heapq.heappop(frontier) # pop organizes the head from smallest to largest
+            (current_cost, current, parent) = heapq.heappop(frontier) # pop organizes the heap from smallest to largest
             if current in visited: continue
             visited[current] = (parent, current_cost)
 
@@ -339,11 +339,49 @@ def ucs(start, goal):
 
 def astar(start, goal):
     """A* search using heuristic(city, goal)."""
+    # must call heuristic
+    # if heuristic is none then is ucs
+    # priority queue, 
+    # (cost, city, parent) cost from start to the city + heuristic(city,goal)
+    # heapq.heappush(pq,(f,city, parent))
+    # test goal when expanded and popped
+    # so the cost path doesn't include the heuristic but the priority queue does
+
     if start not in GRAPH or goal not in GRAPH:
         return (None, None,0)
     elif start == goal:
-        ([start], 0,0)
+        return ([start], 0,0)
+    else:
+        #initialization
+        expanded = 1
+        visited = dict({start:(None,0)})
+        frontier = []
+        for city, city_cost in GRAPH[start].items():
+            cost = city_cost + heuristic(city,goal)
+            heapq.heappush(frontier, (cost, city, start)) # (cost from start + hueristic, city, parent)
+        while frontier:
+            (current_cost, current, parent) = heapq.heappop(frontier) # pop organizes the heap from smallest to largest
+            if current in visited: continue
+            visited[current] = (parent, current_cost)
 
+            expanded += 1
+            if current == goal:
+                # Cost would be incorrect because in this equation, the cost is from start to the city with heuristic, not parent to city
+                (path, _) = generate_path_cost_tuple(visited, goal)
+                return (path, _, expanded)
+            for city, city_cost in GRAPH[current].items():
+                city_present = False
+                h_cost = heuristic(city, goal)
+                cost = city_cost + current_cost + h_cost
+                #assuming starting from the cheapest
+                for item in frontier:
+                    if item[1] == city: 
+                        city_present = True
+                        if cost < item[0]:
+                            heapq.heappush(frontier, (cost, city, current))
+                            break #break out of for loop
+                if not city_present:
+                    heapq.heappush(frontier, (cost, city, current))
     #if there is no connection from start to goal
     return (None, None, 0)
     raise NotImplementedError
