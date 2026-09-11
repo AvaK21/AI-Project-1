@@ -140,19 +140,18 @@ def generate_path_cost_tuple(cities:dict,goal)-> tuple:
             current_position = parent
 
 
-def generate_path_cost_tuple_ucs_astar(cities:dict,goal)-> tuple:
+def generate_path(cities:dict,goal)-> tuple:
     """After the goal city has been found in UCS or A*, pass visited dictionary to 
     determine path from goal to start
-    Assumption: cost from start to child (with hueristic if A*). And so not every useful for UCS and A*
     ### Args:
      cities (visited) structure: dict({city:(parent:cost)})
      goal: goal city that was just seen when expanded last entry of visited dictionary
      
     ### Returns:
-     ([path], cost) - Path from start to goal, and cost of that path"""
+     [path] - Path from start to goal"""
+    
     path = [goal]
     found_start = False
-    total_cost = 0
     parent = None
     current_position = goal
     while not found_start:
@@ -163,11 +162,10 @@ def generate_path_cost_tuple_ucs_astar(cities:dict,goal)-> tuple:
             # reverse order to be correct with start index 0
             path = path[::-1]
             found_start = True
-            return(path,total_cost)
+            return path
         else:
             #get city to front of the path, to be in correct order
             path.append(parent)
-            total_cost += GRAPH[current_position][parent]
             current_position = parent
 
 # ------------------------------------------------------------------ search
@@ -295,7 +293,7 @@ def dfs(start, goal):
             visited[current] = (parent, c_cost)
             if current == goal:
                 # TODO Goal check
-                (path, total_cost) = generate_path_cost_tuple_ucs_astar(visited, goal)
+                (path, total_cost) = generate_path_cost_tuple(visited, goal)
                 return (path,total_cost, expanded)
             # Add the children to the frontier
             for city, city_cost in sorted(GRAPH[current].items(), reverse = True):
@@ -334,13 +332,13 @@ def ucs(start, goal):
         while frontier:
             (current_cost, current, parent) = heapq.heappop(frontier) # pop organizes the heap from smallest to largest
             if current in visited: continue
-
+            #current cost is the path cost up to this point
             visited[current] = (parent, current_cost)
 
             expanded += 1
             if current == goal:
-                (path, total_cost) = generate_path_cost_tuple_ucs_astar(visited, goal)
-                return (path, total_cost, expanded)
+                path = generate_path(visited, goal)
+                return (path, current_cost, expanded)
             for city, city_cost in GRAPH[current].items():
                 city_present = False
                 path_cost = city_cost + current_cost
@@ -365,7 +363,7 @@ def ucs(start, goal):
 def astar(start, goal):
     """A* search using heuristic(city, goal)."""
     # must call heuristic
-    # if heuristic is none then is ucs
+    # if heuristic is none then is ucs - only difference is that in priority queue has path_cost + heuristic(city,goal) instead of just path_cost
     # priority queue, 
     # (cost, city, parent) cost from start to the city + heuristic(city,goal)
     # heapq.heappush(pq,(f,city, parent))
@@ -386,18 +384,22 @@ def astar(start, goal):
             heapq.heappush(frontier, (cost, city, start)) # (cost from start + hueristic, city, parent)
         while frontier:
             (current_cost, current, parent) = heapq.heappop(frontier) # pop organizes the heap from smallest to largest
-            if current in visited: continue
-            visited[current] = (parent, current_cost)
+            # check if current is in visited, if so check if it is a cheaper path, if so update visited
+            if current in visited: 
+                if current_cost < visited[current][1]:
+                    visited[current] = (parent,current_cost)
+                else: continue
+            path_cost = visited[parent][1] + GRAPH[current][parent]
+            visited[current] = (parent, path_cost)
 
             expanded += 1
             if current == goal:
-                # Cost would be incorrect because in this equation, the cost is from start to the city with heuristic, not parent to city
-                (path, total_cost) = generate_path_cost_tuple_ucs_astar(visited, goal)
-                return (path, total_cost, expanded)
+                path = generate_path(visited, goal)
+                return (path, path_cost, expanded)
             for city, city_cost in GRAPH[current].items():
                 city_present = False
                 h_cost = heuristic(city, goal)
-                cost = city_cost + current_cost + h_cost
+                cost = city_cost + path_cost + h_cost
                 #assuming starting from the cheapest
                 for item in frontier:
                     if item[1] == city: 
@@ -411,3 +413,5 @@ def astar(start, goal):
     return (None, None, 0)
     raise NotImplementedError
 #TODO How I am going about the cost is wrong, I am adding the heuristic too much, I don't understand when to add hueristic or not 
+# total path cost (no hueristic) and heuristic only for priority 
+# when pop, check the visited if the popped version is cheaper and update the visited ...
